@@ -23,9 +23,6 @@ end
 % Concat the input features into X matrix. 
 % Prepend array of 1's for bias.
 X = [ones(N,1), x1, x2];
-figure,gscatter(x1,x2,y);
-title('Generated Data');
-
 
 end
 
