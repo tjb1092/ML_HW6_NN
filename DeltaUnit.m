@@ -1,10 +1,9 @@
-function [ iterative_time, iter_num_updates ] = DeltaUnit( X_train, X_val, y_train, y_val, Eta,...
-    E_Thresh, num_epochs, isIterative, pltDS)
-
+function [ iterative_time, iter_num_updates ] = DeltaUnit( X_train, X_val,...
+    y_train, y_val, Eta, E_Thresh, alpha, adapt,...
+    num_epochs, isIncremental, learnType, pltDS)
 
 viewing = [5, 10, 50, 100];  % Epochs to plot decision surface.
 pltstep = 0.01;
-
 
 for eta_i = 1:length(Eta)
     
@@ -20,41 +19,83 @@ for eta_i = 1:length(Eta)
     first = 1;
     clear E;
     endFlg = 0;
-    
+    k = 1;
     while first || (epoch < num_epochs && ~endFlg)
         
         epoch = epoch + 1;
         
+        %Apply Eta change per epoch. 
+        if learnType == 0
+            %Constant Learning Rate. Nothing.
+            eta = Eta(eta_i);                  
+        elseif learnType == 1
+            %Decaying Learning Rate.
+            eta = alpha^epoch * Eta(eta_i);
+
+        elseif learnType == 2
+            % Adaptive Learning Rate.
+            o_val = (X_val * w)';
+            if first
+                prevW = w;
+                prevAddE = (1/(2*length(X_val)))*sum((y_val-o_val).^2);  %Error E per epoch update.
+                eta = Eta(eta_i);
+            else
+                newE = (1/(2*length(X_val)))*sum((y_val-o_val).^2);
+                relChange = abs(prevAddE-newE)/prevAddE;  % Compute Relative change.
+                if newE > prevAddE && relChange > adapt.Thresh
+                    w = prevW; %Discard the new w.
+                    eta(epoch) = eta(end) * adapt.d;
+                elseif newE < prevAddE
+                    eta(epoch) = eta(end) * adapt.D;                   
+                else
+                    % else don't change anything 
+                    % (i.e. greater than prev, but less than thresh).
+                    eta(epoch) = eta(end);
+                end
+            end
+        end
         
-        if isIterative
+        
+        if isIncremental
+            if learnType == 2
+                disp('Not meant for incremental approach'); 
+                return
+            end
             for i = 1:length(X_train)
                 update_cnt = update_cnt + 1;
                 o = X_train(i,:)*w;  % Delta rule is unthresholded dot product.
+                
+            
+            
+            w = BackProp(X_train(i,:), y_train(i), w, o, eta);
 
-                w = w + Eta(eta_i) * (y_train(i) - o) * X_train(i,:)';
-
-                o_val = (X_val * w)';
-                E(update_cnt) = (1/2)*sum((y_val-o_val).^2);  %Error E per update.
-                if(~first && abs(E(update_cnt) - E(update_cnt-1)) < E_Thresh)
-                  endFlg = 1;
-                  break;
-                else
-                  if first
-                    first = 0;
-                  end
-                end
+            o_val = (X_val * w)';
+            E(update_cnt) = (1/(2*length(X_val)))*sum((y_val-o_val).^2);  %Error E per update.
+            if(~first && abs(E(update_cnt) - E(update_cnt-1)) < E_Thresh)
+              %This wasn't nested in a function to ensure the break works
+              %correctly.
+              endFlg = 1;
+              break;
+            else
+              if first
+                first = 0;
+              end
+            end
             end  
-        else     
-            o = (X_train * w)';
-
-            delW = Eta(eta_i) * ((y_train - o) * X_train)';
-            w = w + delW;
-
+        else 
+            
+            o = (X_train * w)'; % Forward Propagation
+            
+            %Indexing eta(end) is for adaptive rates where
+            %We want to see how the eta adapts over time.         
+            [w] = BackProp(X_train, y_train, w, o, eta(end));  
             o_val = (X_val * w)';
             update_cnt = update_cnt + 1;
             E(update_cnt) = (1/(2*length(X_val)))*sum((y_val-o_val).^2);  %Error E per epoch update.
             
             if(~first && abs(E(update_cnt) - E(update_cnt-1)) < E_Thresh)
+              %This wasn't nested in a function to ensure the break works
+              %correctly.
               endFlg = 1;
               break;
             else
@@ -73,7 +114,14 @@ for eta_i = 1:length(Eta)
         err{eta_i} = E;
         iterative_time(eta_i) = toc(timer);
         iter_num_updates(eta_i) = update_cnt;
+
     end
+    
+    if learnType == 2
+        figure, plot(1:epoch,eta);
+        title('Adaptive eta');
+    end
+    
 end
 
 %Problem 1a. Plot E vs. Epoch for different learning rates.

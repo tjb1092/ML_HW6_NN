@@ -1,9 +1,9 @@
-function [ E, w, delW ] = BackProp( w, delW, o, y, Eta)
-%UNTITLED5 Summary of this function goes here
-%   Detailed explanation goes here
+function [w] = BackProp(X, y, w, o, Eta)
+%   Performs backpropagation. The various Eta's are determined outside
+%   This provides a common way to backprop regardless of input shape and
+%   type of learning. 
 
-E = .5 * sum((sign(o)-y).^2);  %Error E.
-delW = delW + Eta * ((y - sign(o)) * X)';
-w = w + delW;
+w = w + (Eta * (y - o) * X)';
+
 end
 

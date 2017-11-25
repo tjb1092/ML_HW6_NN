@@ -3,6 +3,9 @@ function [] = PltE( err, Eta )
 %   Detailed explanation goes here
 
 %Problem 1a. Plot E vs. Epoch for different learning rates.
+
+% Need some subplots for Problem 2a.
+
 figure();
 hold on;
 [~,A] = size(err);
@@ -22,6 +25,8 @@ for i = 1:A
     plot(x_plt, y_plt);
 end
 grid on;
+
+%NEed an if statement to change between number of updates and epochs. 
 xlabel('Epoch');
 ylabel('E');
 title('E per Epoch');
