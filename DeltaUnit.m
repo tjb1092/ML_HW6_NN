@@ -1,6 +1,6 @@
 function [ iterative_time, iter_num_updates ] = DeltaUnit( X_train, X_val,...
     y_train, y_val, Eta, E_Thresh, alpha, adapt,...
-    num_epochs, isIncremental, learnType, pltDS)
+    num_epochs, isIncremental, learnType, pltDS, p3)
 
 viewing = [5, 10, 50, 100];  % Epochs to plot decision surface.
 pltstep = 0.01;
@@ -65,9 +65,7 @@ for eta_i = 1:length(Eta)
                 update_cnt = update_cnt + 1;
                 o = X_train(i,:)*w;  % Delta rule is unthresholded dot product.
                 
-            
-            
-            w = BackProp(X_train(i,:), y_train(i), w, o, eta);
+            w = BackProp(X_train(i,:), y_train(i), w, o, eta, p3);
 
             o_val = (X_val * w)';
             E(update_cnt) = (1/(2*length(X_val)))*sum((y_val-o_val).^2);  %Error E per update.
@@ -84,11 +82,15 @@ for eta_i = 1:length(Eta)
             end  
         else 
             
-            o = (X_train * w)'; % Forward Propagation
+            if p3
+                o = ([X_train(:,1), (X_train(:,2:3) + X_train(:,2:3).^2)]*w)';
+            else
+                o = (X_train * w)'; % Forward Propagation
+            end
             
             %Indexing eta(end) is for adaptive rates where
             %We want to see how the eta adapts over time.         
-            [w] = BackProp(X_train, y_train, w, o, eta(end));  
+            [w] = BackProp(X_train, y_train, w, o, eta(end), p3);  
             o_val = (X_val * w)';
             update_cnt = update_cnt + 1;
             E(update_cnt) = (1/(2*length(X_val)))*sum((y_val-o_val).^2);  %Error E per epoch update.
