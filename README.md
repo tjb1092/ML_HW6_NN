@@ -1,1 +1,1 @@
-#NN HW 6 for Machine Learning
+# NN HW 6 for Machine Learning
