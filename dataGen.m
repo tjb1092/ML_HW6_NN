@@ -9,8 +9,10 @@ x1 = rand([N,1]);
 % (2-mu_x1)/2 with the sigma of x1's distribution. 
 % This should approximately make the ratio of pos/neg 50/50.
 x2 = normrnd((2-mean(x1))/2,std(x1),N,1);
-sum((x1 + 2*x2 -2) > 0)/N  % Validating the ratio of pos/neg.
- 
+
+s = sum((x1 + 2*x2 -2) > 0)/N;  % Validating the ratio of pos/neg.
+fprintf('Generated +/- ratio (0.5 is equal amounts): %0.2f\n',s);
+
 % Assign pos and neg labels
 for n = 1:N
    if (x1(n) + 2*x2(n) -2) > 0
