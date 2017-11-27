@@ -4,8 +4,8 @@ function [w] = BackProp(X, y, w, o, Eta, p3)
 %   type of learning. 
 
 if p3
-    w = w + (Eta * (y - o) * [X(:,1), (X(:,2:3) + X(:,2:3).^2)])';
+    w = w + (1/length(X))*(Eta * (y - o) * [X(:,1), (X(:,2:3) + X(:,2:3).^2)])';
 else
-    w = w + (Eta * (y - o) * X)';
+    w = w + (1/length(X))*(Eta * (y - o) * X)';
 end
 

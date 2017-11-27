@@ -1,4 +1,4 @@
-function [] = PltE( err, Eta )
+function [] = PltE( err, Eta, flags )
 %Problem 1a. Plot E vs. Epoch for different learning rates.
 
 % Need some subplots for Problem 2a.
@@ -34,10 +34,16 @@ end
 
 grid on;
 
-%Need an if statement to change between number of updates and epochs. 
-xlabel('Epoch');
+%Pick the proper title based on whether update or epoch is the better name. 
+if flags.isIncremental
+    x_unit = ' Weight Update #';
+else
+    x_unit = ' Epoch';
+end
+    
+xlabel(x_unit);
 ylabel('E');
-title('E per Epoch');
+title(strcat('E per ',x_unit));
 legend(l_array)
 hold off;
 end

@@ -6,13 +6,14 @@ clear all, clc, close all;
 fprintf('\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
 fprintf('\nProblem 1a-c. Batch mode utilizing the delta training rule.\n\n');
 
-[data.X_train, data.y_train] = dataGen(100);
+[data.X_train, data.y_train] = dataGen(500);
 [data.X_val, data.y_val] = dataGen(50);
 
+%Visualize the generated data.
 figure,gscatter(data.X_train(:,2),data.X_train(:,3),data.y_train);
 title('Generated Data');
 
-Eta = logspace(-6,-2,5);
+Eta = logspace(-3,0,4); %Learning Rates to test.
 num_epochs = 100;
 E_Thresh = 0;  % Forces it to run all 100 epochs.
 
@@ -30,14 +31,21 @@ fprintf('\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 fprintf('\nProblem 1d. Comparing Batch and Incremental Update Modes.\n\n');
 
 clear all;
-[data.X_train, data.y_train] = dataGen(100);
-[data.X_val, data.y_val] = dataGen(50);
+[data.X_train, data.y_train] = dataGen(1000000); %Need to use a lot of data points to see the computational efficicency of ISGD.
 
+% We used a validation set to train on because we wanted to see the benefit
+% of only using one tuple to compute E. We can still quickly check the
+% validation error on each update by using a relatively small validation
+% set. Checking the entire training set's error after each weight update   
+% would make this run much slower than the batch mode.
+[data.X_val, data.y_val] = dataGen(50); 
+
+%Same parameters for both modes.
 E_Thresh = 0.0001;
 num_epochs = 100;
+Eta = logspace(-3,0,4);
 
-%Stochastic Gradient Descent.
-Eta = logspace(-5,-1,5); % Can run @ 0.1 without destabalizing.
+%Incremental Stochastic Gradient Descent.
 flags.isIncremental = 1;
 flags.learnType = 0;
 flags.pltDS = 0;
@@ -48,7 +56,7 @@ flags.p3 = 0;
 
 fprintf('\nIncremental Stochastic Gradient Descent:\n')
 for i = 1:length(Eta)
-    fprintf('Eta: %0.5f | Runtime (s): %0.4f | # Weight Updates: %i\n',Eta(i), time(i), num_updates(i));
+    fprintf('Eta: %0.3f | Runtime (s): %0.4f | # Weight Updates: %i\n',Eta(i), time(i), num_updates(i));
 end
 
 clear flags;
@@ -58,14 +66,16 @@ flags.isIncremental = 0;
 flags.learnType = 0;
 flags.pltDS = 0;
 flags.p3 = 0;
-Eta = logspace(-5,-2,4); %Running it much higher than 0.01 can lead to unstable results.
+
 [ time, num_updates ] = DeltaUnit( data, Eta, E_Thresh,...
     0, 0, num_epochs, flags);
 
 fprintf('\nBatch Mode Gradient Descent:\n')
 for i = 1:length(Eta)
-    fprintf('Eta: %0.5f | Runtime (s): %0.4f | # Weight Updates: %i\n',Eta(i), time(i), num_updates(i));
+    fprintf('Eta: %0.3f | Runtime (s): %0.4f | # Weight Updates: %i\n',Eta(i), time(i), num_updates(i));
 end
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Problem 2
 
@@ -78,7 +88,7 @@ clear all;
 [data.X_train, data.y_train] = dataGen(100);
 [data.X_val, data.y_val] = dataGen(50);
 
-E_Thresh = 0.0001;
+E_Thresh = 0.00001;
 num_epochs = 100;
 
 ISGD_flags.isIncremental = 0;
@@ -119,10 +129,10 @@ fprintf('\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 fprintf('\nProblem 2a. Decaying Learning Rates.\n\n');
 
 clear all;
-[data.X_train, data.y_train] = dataGen(100);
+[data.X_train, data.y_train] = dataGen(10000);
 [data.X_val, data.y_val] = dataGen(50);
 
-E_Thresh = 0.1;
+E_Thresh = 0.001;
 num_epochs = 100;
 
 % Flags & problem specific hyper-parameters.
@@ -133,9 +143,10 @@ flags.p3 = 0;
 
 adapt.d = 0.9;
 adapt.D = 1.02;
-adapt.Thresh = 0.05;
-Eta = logspace(-5,-2,4);
-Eta = 1;
+adapt.Thresh = 0.06;
+%Shows off different scenarios of eta adaptation (increasing, ~ staying the same, and decreasing).
+Eta = logspace(-1,1,3); 
+
 [ time, num_updates ] = DeltaUnit( data, Eta, E_Thresh,...
     0,adapt, num_epochs, flags );
 
@@ -155,7 +166,7 @@ fprintf('\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 fprintf('\nProblem 3. Derived Quadratic Gradient Descent.\n');
 
 % Generate sigmoid data from provided code snippet. Reshape into struct.
-Data = gen_sigmoid_classes(100);
+Data = gen_sigmoid_classes(100000);
 data.X_train = [ones(length(Data),1),Data(:,1:2)];
 data.y_train = Data(:,3)';
 Data = gen_sigmoid_classes(50);
@@ -173,7 +184,7 @@ flags.isIncremental = 0;
 flags.learnType = 0;
 flags.p3 = 1;
 
-Eta = logspace(-5,-2,4);
+Eta = logspace(-3,0,4);
 [ time, num_updates ] = DeltaUnit( data, Eta, E_Thresh,...
     0,0, num_epochs, flags);
 
@@ -182,4 +193,17 @@ for i = 1:length(Eta)
     fprintf('Eta: %0.5f | Runtime (s): %0.4f | # Weight Updates: %i\n',Eta(i), time(i), num_updates(i));
 end
 
+%Incremental Stochastic Gradient Descent.
+flags.isIncremental = 1;
+flags.learnType = 0;
+flags.pltDS = 0;
+flags.p3 = 1;
+
+[ time, num_updates ] = DeltaUnit(data, Eta, E_Thresh,...
+    0, 0, num_epochs, flags);
+
+fprintf('\nIncremental Stochastic Gradient Descent:\n')
+for i = 1:length(Eta)
+    fprintf('Eta: %0.3f | Runtime (s): %0.4f | # Weight Updates: %i\n',Eta(i), time(i), num_updates(i));
+end
 
