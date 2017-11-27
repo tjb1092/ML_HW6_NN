@@ -28,6 +28,8 @@ colormap(map)
 %Plot the labeled data on top of the contour plot.
 gscatter(X(:,2),X(:,3),y,[],'o',4);
 title(t)
+xlabel('X_1');
+ylabel('X_2');
 hold off;
 pltcount = pltcount + 1;
 end

@@ -12,6 +12,8 @@ fprintf('\nProblem 1a-c. Batch mode utilizing the delta training rule.\n\n');
 %Visualize the generated data.
 figure,gscatter(data.X_train(:,2),data.X_train(:,3),data.y_train);
 title('Generated Data');
+xlabel('X_1');
+ylabel('X_2');
 
 Eta = logspace(-3,0,4); %Learning Rates to test.
 num_epochs = 100;
@@ -84,8 +86,10 @@ fprintf('\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 fprintf('\nProblem 2a. Decaying Learning Rates.\n\n');
 
 clear all;
-
-[data.X_train, data.y_train] = dataGen(10000);
+%In order to see the decay on the ISGD, there has to be only a few data
+%points. Otherwise it can update 1000's of times per epoch and convege 
+%within the 1st epoch.
+[data.X_train, data.y_train] = dataGen(100);
 [data.X_val, data.y_val] = dataGen(50);
 
 E_Thresh = 0.000001;
@@ -102,7 +106,7 @@ BSGD_flags.learnType = 1;
 BSGD_flags.pltDS = 0;
 BSGD_flags.p3 = 0;
 
-alpha = 0.9; %We looked at various other starting points, but they looked generally similar.
+alpha = 0.9; %We looked at other starting points, but they looked generally similar.
 
 for n = 1:length(alpha)
     
@@ -151,8 +155,6 @@ Eta = logspace(-1,1,3);
 [ time, num_updates ] = DeltaUnit( data, Eta, E_Thresh,...
     0,adapt, num_epochs, flags );
 
-fprintf('\nBatch Mode With Adaptive Learning Rates:\n')
-
 fprintf('\nAdaptive Learning Parameters:\n')
 fprintf('d: %0.1f | D: %0.2f | thresh: %0.2f\n',adapt.d, adapt.D, adapt.Thresh)
 fprintf('\nAdaptive Learning Performance:\n')
@@ -175,6 +177,8 @@ data.X_val = [ones(length(Data),1),Data(:,1:2)];
 data.y_val = Data(:,3)';
 figure,gscatter(data.X_train(:,2),data.X_train(:,3),data.y_train);
 title('Generated Sigmoid Data');
+xlabel('X_1');
+ylabel('X_2');
 
 E_Thresh = 0.0001;
 num_epochs = 100;
