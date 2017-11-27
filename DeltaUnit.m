@@ -23,7 +23,8 @@ for eta_i = 1:length(Eta)
     first = 1;
     clear E;
     endFlg = 0;
-   
+    clear eta;
+    
     % While the end conditions are not met, continue training.
     while first || (epoch < num_epochs && ~endFlg)
         
@@ -39,7 +40,7 @@ for eta_i = 1:length(Eta)
         
         elseif flags.learnType == 1
             %Problem 2a. Decaying Learning Rate.
-            eta = alpha^epoch * Eta(eta_i);
+            eta(epoch) = alpha^epoch * Eta(eta_i);
 
         elseif flags.learnType == 2
             % Problem 2b. Adaptive Learning Rate.
@@ -87,7 +88,7 @@ for eta_i = 1:length(Eta)
             
                 
                 
-                w = BackProp(data.X_train(i,:), data.y_train(i), w, o, eta, flags.p3);
+                w = BackProp(data.X_train(i,:), data.y_train(i), w, o, eta(end), flags.p3);
 
                 o_val = (data.X_val * w)';
                 E(update_cnt) = (1/(2*length(data.X_val)))*sum((data.y_val-o_val).^2);  %Error E per update.
@@ -147,10 +148,22 @@ for eta_i = 1:length(Eta)
 
     end
     
-    if flags.learnType == 2
-        %Plot eta to see how it adapts during training.
-        figure, plot(1:epoch,eta);   
-        title(strcat('Adaptive Learning Rate. \eta start: ',num2str(Eta(eta_i))));
+    if flags.learnType == 2 || flags.learnType == 1
+        %Plot eta to see how it adapts during training.        
+        figure, plot(1:epoch,eta); 
+        if flags.learnType == 1
+            L_type = 'Decaying ';
+        else
+            L_type = 'Adaptive ';
+        end
+        
+        if flags.isIncremental
+            Mode = 'Incremental Mode: ';
+        else
+            Mode = 'Batch Mode: ';
+        end
+        
+        title(strcat(Mode,' ',L_type,' Learning Rate. \eta start: ',num2str(Eta(eta_i))));
         xlabel('Epoch');
         ylabel('\eta');
     end

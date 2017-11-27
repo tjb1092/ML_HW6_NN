@@ -85,13 +85,14 @@ fprintf('\nProblem 2a. Decaying Learning Rates.\n\n');
 
 clear all;
 
-[data.X_train, data.y_train] = dataGen(100);
+[data.X_train, data.y_train] = dataGen(10000);
 [data.X_val, data.y_val] = dataGen(50);
 
-E_Thresh = 0.00001;
+E_Thresh = 0.000001;
 num_epochs = 100;
+Eta = logspace(-3,0,4);
 
-ISGD_flags.isIncremental = 0;
+ISGD_flags.isIncremental = 1;
 ISGD_flags.learnType = 1;
 ISGD_flags.pltDS = 0;
 ISGD_flags.p3 = 0;
@@ -101,10 +102,10 @@ BSGD_flags.learnType = 1;
 BSGD_flags.pltDS = 0;
 BSGD_flags.p3 = 0;
 
-alpha = linspace(0.7,0.99,3);  %Starting decay rates.
+alpha = 0.9; %We looked at various other starting points, but they looked generally similar.
 
 for n = 1:length(alpha)
-    Eta = logspace(-5,-2,4);
+    
     [ time, num_updates ] = DeltaUnit( data, Eta, E_Thresh,...
         alpha(n),0, num_epochs, ISGD_flags);
     
@@ -113,7 +114,7 @@ for n = 1:length(alpha)
         fprintf('Eta: %0.5f | Runtime (s): %0.4f | # Weight Updates: %i\n',Eta(i), time(i), num_updates(i));
     end
     
-    Eta = logspace(-5,-1,5);
+    
     [ time, num_updates ] = DeltaUnit( data, Eta, E_Thresh,...
         alpha(n),0, num_epochs, BSGD_flags);
     
@@ -126,7 +127,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% 2b. Adaptive rates
 fprintf('\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%');
-fprintf('\nProblem 2a. Decaying Learning Rates.\n\n');
+fprintf('\nProblem 2b. Adaptive Learning Rates.\n\n');
 
 clear all;
 [data.X_train, data.y_train] = dataGen(10000);
@@ -178,7 +179,7 @@ title('Generated Sigmoid Data');
 E_Thresh = 0.0001;
 num_epochs = 100;
 
-%Flags & problem specific hyper-parameters.
+%Batch Mode: Quadratic Gradient Descent.
 flags.pltDS = 0;
 flags.isIncremental = 0;
 flags.learnType = 0;
@@ -193,7 +194,7 @@ for i = 1:length(Eta)
     fprintf('Eta: %0.5f | Runtime (s): %0.4f | # Weight Updates: %i\n',Eta(i), time(i), num_updates(i));
 end
 
-%Incremental Stochastic Gradient Descent.
+%Incremental Mode: Quadratic Gradient Descent.
 flags.isIncremental = 1;
 flags.learnType = 0;
 flags.pltDS = 0;
